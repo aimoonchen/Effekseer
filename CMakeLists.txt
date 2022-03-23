@@ -14,6 +14,7 @@ if (MSVC)
     option(USE_MSVC_RUNTIME_LIBRARY_DLL "Use MSVC runtime library DLL" OFF)
 endif()
 
+option(BUILD_BGFX "Build BGFX" ON)
 option(BUILD_GL "Build OpenGL" ON)
 option(BUILD_VIEWER "Build viewer" OFF)
 option(BUILD_EDITOR "Build editor" OFF)

@@ -82,10 +82,16 @@ if (BUILD_DX9)
     add_subdirectory(EffekseerRendererDX9)
     set_property(TARGET EffekseerRendererDX9 PROPERTY FOLDER Libraries)
 endif()
+
 if (BUILD_DX11)
     add_subdirectory(EffekseerRendererDX11)
     set_property(TARGET EffekseerRendererDX11 PROPERTY FOLDER Libraries)
 endif()
+
+if (BUILD_BGFX)
+    add_subdirectory(EffekseerRendererBGFX)
+    set_property(TARGET EffekseerRendererBGFX PROPERTY FOLDER Libraries)
+endif ()
 
 if (BUILD_GL)
     add_subdirectory(EffekseerRendererGL)
