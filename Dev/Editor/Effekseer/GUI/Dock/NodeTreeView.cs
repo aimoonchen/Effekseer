@@ -521,7 +521,7 @@ namespace Effekseer.GUI.Dock
 			var visible = Node.IsRendered;
 
 			float buttonSize = Manager.NativeManager.GetTextLineHeight();
-			if (Manager.NativeManager.ImageButton(Images.GetIcon(visible ? "VisibleShow" : "VisibleHide"), buttonSize, buttonSize))
+			if (Manager.NativeManager.IconButton(visible ? Icons.VisibleShow : Icons.VisibleHide, buttonSize))
 			{
 				int LEFT_SHIFT = 340;
 				int RIGHT_SHIFT = 344;
@@ -598,27 +598,36 @@ namespace Effekseer.GUI.Dock
 
 			treeView.Popup();
 
-			// D&D Source
-			if (Manager.NativeManager.BeginDragDropSource())
+			if (Node is Data.NodeRoot)
 			{
-				byte[] idBuf = BitConverter.GetBytes(UniqueID);
-				if (Manager.NativeManager.SetDragDropPayload(treeView.treePyloadName, idBuf, idBuf.Length))
-				{
-				}
-				Manager.NativeManager.Text(this.Node.Name);
-
-				Manager.NativeManager.EndDragDropSource();
+				UpdateDDTargetNode();
 			}
+			else if (Node is Data.Node)
+			{
+				// D&D Source
+				if (Manager.NativeManager.BeginDragDropSource())
+				{
+					byte[] idBuf = BitConverter.GetBytes(UniqueID);
+					if (Manager.NativeManager.SetDragDropPayload(treeView.treePyloadName, idBuf, idBuf.Length))
+					{
+					}
+					Manager.NativeManager.Text(this.Node.Name);
 
-			UpdateDDTargetNode();
+					Manager.NativeManager.EndDragDropSource();
+				}
 
-			Manager.NativeManager.TableSetColumnIndex(1);
+				UpdateDDTargetNode();
 
-			UpdateLODButton();
+				Manager.NativeManager.TableSetColumnIndex(1);
 
-			Manager.NativeManager.SameLine();
+				Manager.NativeManager.SetCursorPosY(Manager.NativeManager.GetCursorPosY() + 5);
 
-			UpdateVisibleButton();
+				UpdateLODButton();
+
+				Manager.NativeManager.SameLine();
+
+				UpdateVisibleButton();
+			}
 
 			if (IsExpanding)
 			{
@@ -633,7 +642,7 @@ namespace Effekseer.GUI.Dock
 
 				if (Children.Count != 0)
 				{
-					Children.Internal.Last().UpdateDDTargetSeparator(true);
+					//Children.Internal.Last().UpdateDDTargetSeparator(true);
 				}
 
 				// pair with TreeNodeEx

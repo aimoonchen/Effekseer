@@ -82,7 +82,12 @@ namespace Effekseer.GUI
 		{
 			try
 			{
-				System.Diagnostics.Process.Start(path);
+				var info = new System.Diagnostics.ProcessStartInfo
+				{
+					FileName = path,
+					UseShellExecute = true
+				};
+				System.Diagnostics.Process.Start(info);
 			}
 			catch
 			{
@@ -328,7 +333,7 @@ namespace Effekseer.GUI
 			UpdateFont();
 
 			// Load window icon
-			NativeManager.SetWindowIcon(System.IO.Path.Combine(appDirectory, "resources/icon.png"));
+			NativeManager.SetWindowIcon(System.IO.Path.Combine(appDirectory, "resources/icons/AppIcon.png"));
 
 			// Load config
 			RecentFiles.LoadRecentConfig();

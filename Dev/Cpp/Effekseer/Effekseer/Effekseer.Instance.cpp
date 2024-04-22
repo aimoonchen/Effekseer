@@ -231,6 +231,7 @@ void Instance::Initialize(Instance* parent, float spawnDeltaFrame, int32_t insta
 
 	prevPosition_ = SIMD::Vec3f(0, 0, 0);
 	prevLocalVelocity_ = SIMD::Vec3f(0, 0, 0);
+	globalDirection_ = SIMD::Vec3f(0, 1, 0);
 	location_modify_global_ = SIMD::Vec3f(0, 0, 0);
 	velocity_modify_global_ = SIMD::Vec3f(0, 0, 0);
 }
@@ -371,6 +372,8 @@ void Instance::FirstUpdate()
 	if (m_pEffectNode->GenerationLocation.EffectsRotation)
 	{
 		prevPosition_ = SIMD::Vec3f::Transform(prevPosition_, m_GenerationLocation);
+		globalDirection_ = SIMD::Vec3f::Transform(globalDirection_, m_GenerationLocation.Get3x3SubMatrix());
+		globalDirection_ = SIMD::Vec3f::Transform(globalDirection_, m_ParentMatrix);
 	}
 	else
 	{
@@ -381,6 +384,20 @@ void Instance::FirstUpdate()
 	prevLocalVelocity_ = SIMD::Vec3f(0, 0, 0);
 
 	m_pEffectNode->InitializeRenderedInstance(*this, *ownGroup_, m_pManager);
+
+	if (m_pEffectNode->IsRendered && m_pEffectNode->GpuParticlesResource)
+	{
+		if (auto gpuParticleSystem = m_pManager->GetGpuParticleSystem())
+		{
+			m_gpuEmitterID = gpuParticleSystem->NewEmitter(m_pEffectNode->GpuParticlesResource, GetInstanceGlobal());
+
+			if (m_gpuEmitterID >= 0)
+			{
+				gpuParticleSystem->SetRandomSeed(m_gpuEmitterID, (uint32_t)m_randObject.GetRandInt());
+				gpuParticleSystem->StartEmit(m_gpuEmitterID);
+			}
+		}
+	}
 }
 
 void Instance::Update(float deltaFrame, bool shown)
@@ -434,6 +451,28 @@ void Instance::Update(float deltaFrame, bool shown)
 	}
 
 	UpdateTransform(deltaFrame);
+
+	// Update gpu particles emitter parameters
+	if (m_gpuEmitterID >= 0)
+	{
+		if (auto gpuParticleSystem = m_pManager->GetGpuParticleSystem())
+		{
+			gpuParticleSystem->SetTransform(m_gpuEmitterID, ToStruct(globalMatrix_rendered));
+
+			auto& paramSet = m_pEffectNode->GpuParticlesResource->GetParamSet();
+			if ((BindType)paramSet.RenderColor.ColorInherit == BindType::NotBind_Root)
+			{
+				InstanceGlobal* instanceGlobal = m_pContainer->GetRootInstance();
+				gpuParticleSystem->SetColor(m_gpuEmitterID, instanceGlobal->GlobalColor);
+			}
+			else
+			{
+				gpuParticleSystem->SetColor(m_gpuEmitterID, ColorInheritance);
+			}
+
+			GetInstanceGlobal()->IsUsingGpuParticles = true;
+		}
+	}
 
 	// Get parent color.
 	if (m_pParent != nullptr)
@@ -563,6 +602,7 @@ bool Instance::AreChildrenActive() const
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -570,6 +610,11 @@ float Instance::GetFlipbookIndexAndNextRate() const
 {
 	auto& CommonValue = this->m_pEffectNode->RendererCommon;
 	return GetFlipbookIndexAndNextRate(CommonValue.UVs[0].Type, CommonValue.UVs[0], uvAnimationData_[0]);
+}
+
+SIMD::Vec3f Instance::GetGlobalDirection() const
+{
+	return globalDirection_;
 }
 
 void Instance::UpdateTransform(float deltaFrame)
@@ -758,7 +803,14 @@ void Instance::UpdateTransform(float deltaFrame)
 
 		globalMatrix_.Step(calcMat, m_LivingTime);
 
-		prevGlobalPosition_ = globalMatrix_.GetCurrent().GetTranslation();
+		SIMD::Vec3f currentGlbalPosition = globalMatrix_.GetCurrent().GetTranslation();
+		SIMD::Vec3f deltaPosition = currentGlbalPosition - prevGlobalPosition_;
+
+		if (!deltaPosition.IsZero())
+		{
+			globalDirection_ = deltaPosition.GetNormal();
+		}
+		prevGlobalPosition_ = currentGlbalPosition;
 
 		globalMatrix_rendered = calcMat;
 	}
@@ -902,6 +954,12 @@ void Instance::Kill()
 		for (InstanceGroup* group = childrenGroups_; group != nullptr; group = group->NextUsedByInstance)
 		{
 			group->IsReferencedFromInstance = false;
+		}
+
+		if (m_gpuEmitterID >= 0)
+		{
+			m_pManager->GetGpuParticleSystem()->StopEmit(m_gpuEmitterID);
+			m_gpuEmitterID = -1;
 		}
 
 		m_State = eInstanceState::INSTANCE_STATE_REMOVED;

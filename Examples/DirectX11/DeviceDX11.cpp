@@ -153,13 +153,6 @@ void DeviceDX11::Terminate()
 	CoUninitialize();
 }
 
-void DeviceDX11::ClearScreen()
-{
-	float ClearColor[] = {0.0f, 0.0f, 0.0f, 1.0f};
-	dx11Context->ClearRenderTargetView(renderTargetView.Get(), ClearColor);
-	dx11Context->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-}
-
 void DeviceDX11::PresentDevice()
 {
 	swapChain->Present(1, 0);
@@ -178,11 +171,31 @@ bool DeviceDX11::NewFrame()
 	return result;
 }
 
-void DeviceDX11::SetupEffekseerModules(::Effekseer::ManagerRef efkManager)
+void DeviceDX11::BeginComputePass()
+{
+}
+
+void DeviceDX11::EndComputePass()
+{
+}
+
+void DeviceDX11::BeginRenderPass()
+{
+	float ClearColor[] = {0.0f, 0.0f, 0.0f, 1.0f};
+	dx11Context->ClearRenderTargetView(renderTargetView.Get(), ClearColor);
+	dx11Context->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+}
+
+void DeviceDX11::EndRenderPass()
+{
+}
+
+void DeviceDX11::SetupEffekseerModules(::Effekseer::ManagerRef efkManager, bool usingProfiler)
 {
 	// Create a  graphics device
 	// 描画デバイスの作成
-	auto graphicsDevice = ::EffekseerRendererDX11::CreateGraphicsDevice(GetID3D11Device(), GetID3D11DeviceContext());
+	::Effekseer::Backend::GraphicsDeviceRef graphicsDevice;
+	graphicsDevice = ::EffekseerRendererDX11::CreateGraphicsDevice(GetID3D11Device(), GetID3D11DeviceContext());
 
 	// Create a renderer of effects
 	// エフェクトのレンダラーの作成
@@ -205,17 +218,8 @@ void DeviceDX11::SetupEffekseerModules(::Effekseer::ManagerRef efkManager)
 	efkManager->SetMaterialLoader(efkRenderer->CreateMaterialLoader());
 	efkManager->SetCurveLoader(Effekseer::MakeRefPtr<Effekseer::CurveLoader>());
 
-	// Specify sound modules
-	// サウンドモジュールの設定
-	efkSound = ::EffekseerSound::Sound::Create(GetIXAudio2(), 16, 16);
-
-	// Specify a metho to play sound from an instance of efkSound
-	// 音再生用インスタンスから再生機能を指定
-	efkManager->SetSoundPlayer(efkSound->CreateSoundPlayer());
-
-	// Specify a sound data loader
-	// It can be extended by yourself. It is loaded from a file on now.
-	// サウンドデータの読込機能を設定する。
-	// ユーザーが独自で拡張できる。現在はファイルから読み込んでいる。
-	efkManager->SetSoundLoader(efkSound->CreateSoundLoader());
+	if (usingProfiler)
+	{
+		efkManager->SetGpuTimer(efkRenderer->CreateGpuTimer());
+	}
 }

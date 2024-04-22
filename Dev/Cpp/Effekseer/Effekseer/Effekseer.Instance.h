@@ -81,6 +81,8 @@ protected:
 	SIMD::Vec3f location_modify_global_;
 	SIMD::Vec3f velocity_modify_global_;
 
+	SIMD::Vec3f globalDirection_;
+
 public:
 	static const int32_t ChildrenMax = 16;
 
@@ -180,6 +182,8 @@ public:
 	float m_AlphaThreshold = 0.0f;
 
 	CollisionsState collisionState_;
+	
+	int32_t m_gpuEmitterID = -1;
 
 	Instance(ManagerImplemented* pManager, EffectNodeImplemented* pEffectNode, InstanceContainer* pContainer, InstanceGroup* pGroup);
 
@@ -245,6 +249,8 @@ public:
 	bool AreChildrenActive() const;
 
 	float GetFlipbookIndexAndNextRate() const;
+
+	SIMD::Vec3f GetGlobalDirection() const;
 
 private:
 	void UpdateTransform(float deltaFrame);

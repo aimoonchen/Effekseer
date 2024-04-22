@@ -36,6 +36,8 @@ namespace Effekseer.GUI
 		public const string PanelProfiler = "\xec1a";
 		public const string PanelLOD = "\xec26";
 		public const string PanelKillRules = "\xec27";
+		public const string PanelGpuParticles = "\xec28";
+		public const string PanelCollisions = "\xec29";
 
 		public const string NodeTypeEmpty = "\xec20";
 		public const string NodeTypeSprite = "\xec21";
@@ -57,5 +59,16 @@ namespace Effekseer.GUI
 
 		public const string NavMenu = "\xec40";
 		public const string NavFilter = "\xec41";
+		public const string FileView = "\xec42";
+		public const string Remove = "\xec43";
+		public const string Help = "\xec44";
+		public const string Copy = "\xec45";
+		public const string Paste = "\xec46";
+		public const string ArrowUp = "\xec47";
+		public const string ArrowDown = "\xec48";
+		public const string ArrowLeft = "\xec49";
+		public const string ArrowRight = "\xec4a";
+		public const string VisibleShow = "\xec4b";
+		public const string VisibleHide = "\xec4c";
 	}
 }

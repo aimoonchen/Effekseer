@@ -354,7 +354,8 @@ bool EffectRenderer::Initialize(std::shared_ptr<GraphicsDevice> graphicsDevice,
 	::Effekseer::RingRendererRef ring_renderer = renderer_->CreateRingRenderer();
 	::Effekseer::ModelRendererRef model_renderer = renderer_->CreateModelRenderer();
 	::Effekseer::TrackRendererRef track_renderer = renderer_->CreateTrackRenderer();
-	::Effekseer::GPUTimerRef gpu_timer = renderer_->CreateGPUTimer();
+	::Effekseer::GpuTimerRef gpu_timer = renderer_->CreateGpuTimer();
+	::Effekseer::GpuParticleSystemRef gpu_particles = renderer_->CreateGpuParticleSystem();
 
 	if (sprite_renderer == nullptr)
 	{
@@ -369,7 +370,8 @@ bool EffectRenderer::Initialize(std::shared_ptr<GraphicsDevice> graphicsDevice,
 	manager_->SetRingRenderer(ring_renderer);
 	manager_->SetModelRenderer(model_renderer);
 	manager_->SetTrackRenderer(track_renderer);
-	manager_->SetGPUTimer(gpu_timer);
+	manager_->SetGpuTimer(gpu_timer);
+	manager_->SetGpuParticleSystem(gpu_particles);
 
 	if (graphics_->GetGraphics()->GetGraphicsDevice() != nullptr)
 	{
@@ -623,9 +625,9 @@ void EffectRenderer::UpdatePaused()
 void EffectRenderer::Update()
 {
 	/*{
-		int32_t gpuTime = manager_->GetGPUTime();
+		int32_t gpuTime = manager_->GetGpuTime();
 		char log[256];
-		snprintf(log, sizeof(log), "GPUTime: %d\n", gpuTime);
+		snprintf(log, sizeof(log), "GpuTime: %d\n", gpuTime);
 		OutputDebugStringA(log);
 	}*/
 
@@ -743,6 +745,7 @@ void EffectRenderer::Update()
 		updateParameter.DeltaFrame = (float)m_step;
 		updateParameter.UpdateInterval = 0.0;
 		manager_->Update(updateParameter);
+		manager_->Compute();
 
 		renderer_->SetTime(m_time / 60.0f);
 
@@ -1016,8 +1019,7 @@ void EffectRenderer::Render(std::shared_ptr<RenderImage> renderImage)
 	if (parameter_.RenderingMethod == RenderingMethodType::Overdraw)
 	{
 		graphics_->GetGraphics()->SetRenderTarget({renderTargetImage}, nullptr);
-		overdrawEffect_->GetDrawParameter().TexturePtrs[0] = hdrRenderTexture;
-		overdrawEffect_->GetDrawParameter().TextureCount = 1;
+		overdrawEffect_->GetDrawParameter().SetTexture(0, hdrRenderTexture, Effekseer::Backend::TextureWrapType::Clamp, Effekseer::Backend::TextureSamplingType::Linear);
 		overdrawEffect_->Render();
 	}
 	else
@@ -1140,14 +1142,14 @@ void EffectRenderer::SetPostEffectParameter(const Effekseer::Tool::PostEffectPar
 	postEffectParameter_ = param;
 }
 
-int32_t EffectRenderer::GetCPUTime()
+int32_t EffectRenderer::GetCpuTime()
 {
 	return manager_->GetUpdateTime() + manager_->GetDrawTime();
 }
 
-int32_t EffectRenderer::GetGPUTime()
+int32_t EffectRenderer::GetGpuTime()
 {
-	return manager_->GetGPUTime();
+	return manager_->GetGpuTime();
 }
 
 } // namespace Tool

@@ -107,6 +107,10 @@ namespace Effekseer
 				{
 					language = "en";
 				}
+				else if (systemLanguage == swig.SystemLanguage.SimplifiedChinese)
+				{
+					language = "zhcn";
+				}
 			}
 			else
 			{
@@ -236,7 +240,9 @@ namespace Effekseer
 			MultiLanguageTextProvider.LoadCSV("Effekseer_FCurve_Element.csv");
 			MultiLanguageTextProvider.LoadCSV("Effekseer_KillRules.csv");
 			MultiLanguageTextProvider.LoadCSV("Effekseer_Profiler.csv");
+			MultiLanguageTextProvider.LoadCSV("Effekseer_GpuParticles.csv");
 			LanguageTable.CreateTableFromDirectory(EntryDirectory);
+			LanguageTable.StoreLanguageNames(EntryDirectory);
 			GUI.Manager.UpdateFont();
 		}
 

@@ -7,6 +7,8 @@
 #include "EffekseerRendererLLGI.MaterialLoader.h"
 #include "EffekseerRendererLLGI.ModelRenderer.h"
 #include "EffekseerRendererLLGI.Shader.h"
+#include "EffekseerRendererLLGI.GpuParticles.h"
+#include "EffekseerRendererLLGI.GpuTimer.h"
 
 #include <EffekseerRendererCommon/EffekseerRenderer.RibbonRendererBase.h>
 #include <EffekseerRendererCommon/EffekseerRenderer.RingRendererBase.h>
@@ -486,20 +488,23 @@ void RendererImplemented::SetRestorationOfStatesFlag(bool flag)
 
 void RendererImplemented::ChangeRenderPassPipelineState(LLGI::RenderPassPipelineStateKey key)
 {
+	auto gd = graphicsDevice_.DownCast<EffekseerRendererLLGI::Backend::GraphicsDevice>();
+
 	auto it = renderpassPipelineStates_.find(key);
 	if (it != renderpassPipelineStates_.end())
 	{
 		currentRenderPassPipelineState_ = it->second;
+		gd->SetRenderPassPipelineState(currentRenderPassPipelineState_.get());
 	}
 	else
 	{
-		auto gd = graphicsDevice_.DownCast<EffekseerRendererLLGI::Backend::GraphicsDevice>();
 		auto pipelineState = LLGI::CreateSharedPtr(gd->GetGraphics()->CreateRenderPassPipelineState(key));
 		if (pipelineState != nullptr)
 		{
 			renderpassPipelineStates_[key] = pipelineState;
 		}
 		currentRenderPassPipelineState_ = pipelineState;
+		gd->SetRenderPassPipelineState(currentRenderPassPipelineState_.get());
 	}
 }
 
@@ -544,6 +549,10 @@ bool RendererImplemented::EndRendering()
 void RendererImplemented::SetCommandList(Effekseer::RefPtr<EffekseerRenderer::CommandList> commandList)
 {
 	commandList_ = commandList;
+
+	auto device = GetGraphicsDevice().DownCast<Backend::GraphicsDevice>();
+	auto cl = commandList_.DownCast<CommandList>();
+	device->SetCommandList((cl) ? cl->GetInternal() : nullptr);
 }
 
 Effekseer::Backend::IndexBufferRef RendererImplemented::GetIndexBuffer()
@@ -588,6 +597,26 @@ int32_t RendererImplemented::GetSquareMaxCount() const
 ::Effekseer::TrackRendererRef RendererImplemented::CreateTrackRenderer()
 {
 	return ::Effekseer::TrackRendererRef(new ::EffekseerRenderer::TrackRendererBase<RendererImplemented, false>(this));
+}
+
+::Effekseer::GpuTimerRef RendererImplemented::CreateGpuTimer()
+{
+	return ::Effekseer::GpuTimerRef(new ::EffekseerRendererLLGI::GpuTimer(this, false));
+}
+
+::Effekseer::GpuParticleSystemRef RendererImplemented::CreateGpuParticleSystem(const Effekseer::GpuParticleSystem::Settings& settings)
+{
+	auto gpuParticleSystem = ::Effekseer::GpuParticleSystemRef(new ::EffekseerRendererLLGI::GpuParticleSystem(this));
+	if (!gpuParticleSystem->InitSystem(settings))
+	{
+		return nullptr;
+	}
+	return gpuParticleSystem;
+}
+
+::Effekseer::GpuParticleFactoryRef RendererImplemented::CreateGpuParticleFactory()
+{
+	return ::Effekseer::GpuParticleFactoryRef(new ::EffekseerRenderer::GpuParticleFactory(GetGraphicsDevice()));
 }
 
 ::Effekseer::TextureLoaderRef RendererImplemented::CreateTextureLoader(::Effekseer::FileInterfaceRef fileInterface)
@@ -783,9 +812,10 @@ void RendererImplemented::SetPixelBufferToShader(const void* data, int32_t size,
 void RendererImplemented::SetTextures(Shader* shader, Effekseer::Backend::TextureRef* textures, int32_t count)
 {
 	auto state = GetRenderState()->GetActiveState();
-	LLGI::TextureWrapMode ws[2];
+	std::array<LLGI::TextureWrapMode, 3> ws;
 	ws[(int)Effekseer::TextureWrapType::Clamp] = LLGI::TextureWrapMode::Clamp;
 	ws[(int)Effekseer::TextureWrapType::Repeat] = LLGI::TextureWrapMode::Repeat;
+	ws[(int)Effekseer::TextureWrapType::Mirror] = LLGI::TextureWrapMode::Mirror;
 
 	LLGI::TextureMinMagFilter fs[2];
 	fs[(int)Effekseer::TextureFilterType::Linear] = LLGI::TextureMinMagFilter::Linear;
@@ -812,6 +842,26 @@ void RendererImplemented::ResetRenderState()
 {
 	m_renderState->GetActiveState().Reset();
 	m_renderState->Update(true);
+}
+
+void RendererImplemented::ResetQuery(LLGI::Query* query)
+{
+	GetCurrentCommandList()->ResetQuery(query);
+}
+
+void RendererImplemented::BeginQuery(LLGI::Query* query, uint32_t queryIndex)
+{
+	GetCurrentCommandList()->BeginQuery(query, queryIndex);
+}
+
+void RendererImplemented::EndQuery(LLGI::Query* query, uint32_t queryIndex)
+{
+	GetCurrentCommandList()->EndQuery(query, queryIndex);
+}
+
+void RendererImplemented::RecordTimestamp(LLGI::Query* query, uint32_t queryIndex)
+{
+	GetCurrentCommandList()->RecordTimestamp(query, queryIndex);
 }
 
 } // namespace EffekseerRendererLLGI

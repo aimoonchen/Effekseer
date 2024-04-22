@@ -127,6 +127,8 @@ private:
 	// 確保済みインスタンス数
 	int m_instance_max;
 
+	int m_nextComputeCount;
+
 	/**
 		@note
 		An user can specify only the maximum number of instance.
@@ -164,6 +166,7 @@ private:
 	SettingRef m_setting;
 
 	int m_updateTime;
+	int m_computeTime;
 	int m_drawTime;
 
 	uint32_t m_sequenceNumber;
@@ -178,7 +181,9 @@ private:
 
 	TrackRendererRef m_trackRenderer;
 
-	GPUTimerRef m_gpuTimer;
+	GpuParticleSystemRef m_gpuParticleSystem;
+
+	GpuTimerRef m_gpuTimer;
 
 	SoundPlayerRef m_soundPlayer;
 
@@ -254,9 +259,17 @@ public:
 
 	void SetTrackRenderer(TrackRendererRef renderer) override;
 
-	GPUTimerRef GetGPUTimer() override;
+	GpuTimerRef GetGpuTimer() override;
 
-	void SetGPUTimer(GPUTimerRef gpuTimer) override;
+	void SetGpuTimer(GpuTimerRef gpuTimer) override;
+
+	GpuParticleSystemRef GetGpuParticleSystem() override;
+
+	void SetGpuParticleSystem(GpuParticleSystemRef system) override;
+
+	GpuParticleFactoryRef GetGpuParticleFactory() override;
+
+	void SetGpuParticleFactory(GpuParticleFactoryRef factory) override;
 
 	const SettingRef& GetSetting() const override;
 
@@ -414,6 +427,8 @@ private:
 	void ResetAndPlayWithDataSet(DrawSet& drawSet, float frame);
 
 public:
+	void Compute() override;
+
 	void Draw(const Manager::DrawParameter& drawParameter) override;
 
 	void DrawBack(const Manager::DrawParameter& drawParameter) override;
@@ -438,9 +453,9 @@ public:
 
 	int GetDrawTime() const override;
 
-	int32_t GetGPUTime() const override;
+	int32_t GetGpuTime() const override;
 
-	int32_t GetGPUTime(Handle handle) const override;
+	int32_t GetGpuTime(Handle handle) const override;
 
 	int32_t GetRestInstancesCount() const override;
 

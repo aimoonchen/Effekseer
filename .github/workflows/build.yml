@@ -18,13 +18,18 @@ on:
       - 17x
 
 env:
-  EFFEKSEER_VERSION: 170
+  EFFEKSEER_VERSION: 180Beta1
 
 jobs:
   win_x86_build:
     name: Build Windows(x86)
     runs-on: windows-2019
     steps:
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
       - uses: actions/checkout@v2
       - run: |
          git submodule update --init

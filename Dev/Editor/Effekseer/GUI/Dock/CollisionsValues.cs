@@ -14,7 +14,7 @@ namespace Effekseer.GUI.Dock
 
 		public CollisionsValues()
 		{
-			Label = Icons.PanelDepth + MultiLanguageTextProvider.GetText("Collisions") + "###Collisions";
+			Label = Icons.PanelCollisions + MultiLanguageTextProvider.GetText("Collisions") + "###Collisions";
 			DocPage = "collisions.html";
 
 			paramerterList = new BindableComponent.ParameterList();
@@ -50,7 +50,6 @@ namespace Effekseer.GUI.Dock
 			{
 			}
 
-			Manager.NativeManager.Separator();
 			paramerterList.Update();
 		}
 

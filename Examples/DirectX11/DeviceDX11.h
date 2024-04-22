@@ -3,7 +3,6 @@
 #include "../Utils/Input.h"
 #include "../Utils/Window.h"
 #include <EffekseerRendererDX11.h>
-#include <EffekseerSoundXAudio2.h>
 #include <XAudio2.h>
 #include <d3d11.h>
 #include <wrl/client.h>
@@ -32,7 +31,6 @@ private:
 	IXAudio2MasteringVoice* xa2MasterVoice = nullptr;
 
 	::EffekseerRendererDX11::RendererRef efkRenderer;
-	::EffekseerSound::SoundRef efkSound;
 
 public:
 	DeviceDX11() = default;
@@ -68,11 +66,14 @@ public:
 
 	bool Initialize(const char* windowTitle, Utils::Vec2I windowSize);
 	void Terminate();
-	void ClearScreen();
 	void PresentDevice();
 	bool NewFrame();
+	void BeginComputePass();
+	void EndComputePass();
+	void BeginRenderPass();
+	void EndRenderPass();
 
-	void SetupEffekseerModules(::Effekseer::ManagerRef efkManager);
+	void SetupEffekseerModules(::Effekseer::ManagerRef efkManager, bool usingProfiler = false);
 	::EffekseerRendererDX11::RendererRef GetEffekseerRenderer()
 	{
 		return efkRenderer;

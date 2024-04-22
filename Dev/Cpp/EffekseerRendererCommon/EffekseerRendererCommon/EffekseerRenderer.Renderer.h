@@ -277,8 +277,18 @@ public:
 	/**
 		@brief	GPUタイマーを生成する。
 	*/
-	virtual ::Effekseer::GPUTimerRef CreateGPUTimer() { return nullptr; }
+	virtual ::Effekseer::GpuTimerRef CreateGpuTimer() { return nullptr; }
 
+	/**
+		@brief	GPUパーティクルを生成する。
+	*/
+	virtual ::Effekseer::GpuParticleSystemRef CreateGpuParticleSystem(const Effekseer::GpuParticleSystem::Settings& settings = {}) { return nullptr; }
+	
+	/**
+		@brief	GPUパーティクルファクトリを生成する。
+	*/
+	virtual ::Effekseer::GpuParticleFactoryRef CreateGpuParticleFactory() { return nullptr; };
+	
 	/**
 		@brief	標準のテクスチャ読込クラスを生成する。
 	*/

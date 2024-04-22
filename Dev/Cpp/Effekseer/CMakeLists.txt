@@ -55,7 +55,8 @@ set(effekseer_public_h
     Effekseer/Renderer/Effekseer.RingRenderer.h
     Effekseer/Renderer/Effekseer.ModelRenderer.h
     Effekseer/Renderer/Effekseer.TrackRenderer.h
-    Effekseer/Renderer/Effekseer.GPUTimer.h
+    Effekseer/Renderer/Effekseer.GpuTimer.h
+    Effekseer/Renderer/Effekseer.GpuParticles.h
     Effekseer/Effekseer.EffectLoader.h
     Effekseer/Effekseer.TextureLoader.h
     Effekseer/Model/Model.h
@@ -99,6 +100,8 @@ file(GLOB effekseer_h
     Effekseer/Model/SplineGenerator.h
     Effekseer/Network/*.h
     Effekseer/Network/data/*.h
+    Effekseer/VectorField/VectorField.h
+    Effekseer/VectorField/VectorFieldLoader.h
 )
 
 set(effekseer_src
@@ -140,6 +143,7 @@ set(effekseer_src
     Effekseer/Parameter/Easing.cpp
     Effekseer/Parameter/Effekseer.Parameters.cpp
     Effekseer/Parameter/KillRules.cpp
+    Effekseer/Parameter/GpuParticlesParameter.cpp
     Effekseer/Parameter/Rotation.cpp
     Effekseer/Utils/Effekseer.CustomAllocator.cpp
     Effekseer/SIMD/Mat43f.cpp
@@ -155,6 +159,8 @@ set(effekseer_src
     Effekseer/Network/Effekseer.Server.cpp
     Effekseer/Network/Effekseer.Session.cpp
     Effekseer/Network/Effekseer.Socket.cpp
+    Effekseer/VectorField/VectorField.cpp
+    Effekseer/VectorField/VectorFieldLoader.cpp
 )
 
 add_library(${PROJECT_NAME} STATIC

@@ -13,11 +13,13 @@ set(PublicHeaders
     EffekseerRendererCommon/EffekseerRenderer.StandardRenderer.h
     EffekseerRendererCommon/EffekseerRenderer.TrackRendererBase.h
     EffekseerRendererCommon/EffekseerRenderer.CommonUtils.h
+    EffekseerRendererCommon/EffekseerRenderer.GpuParticles.h
     EffekseerRendererCommon/EffekseerRenderer.ShaderBase.h
     EffekseerRendererCommon/EffekseerRenderer.Renderer_Impl.h
     EffekseerRendererCommon/GraphicsDeviceCPU.h
     EffekseerRendererCommon/ModelLoader.h
     EffekseerRendererCommon/TextureLoader.h
+    EffekseerRendererCommon/TrailRenderer.h
     EffekseerRendererCommon/VertexBuffer.h
 )
 
@@ -32,6 +34,7 @@ set(LocalHeaders
 set(LocalSources
     EffekseerRendererCommon/EffekseerRenderer.CommonUtils.cpp
     EffekseerRendererCommon/EffekseerRenderer.DDSTextureLoader.cpp
+    EffekseerRendererCommon/EffekseerRenderer.GpuParticles.cpp
     EffekseerRendererCommon/EffekseerRenderer.ModelRendererBase.cpp
     EffekseerRendererCommon/EffekseerRenderer.PngTextureLoader.cpp
     EffekseerRendererCommon/EffekseerRenderer.Renderer.cpp

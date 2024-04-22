@@ -563,6 +563,16 @@ public class GUIManager : global::System.IDisposable {
     return ret;
   }
 
+  public bool IconButton(string icon, float size) {
+    bool ret = EffekseerNativePINVOKE.GUIManager_IconButton__SWIG_0(swigCPtr, icon, size);
+    return ret;
+  }
+
+  public bool IconButton(string icon) {
+    bool ret = EffekseerNativePINVOKE.GUIManager_IconButton__SWIG_1(swigCPtr, icon);
+    return ret;
+  }
+
   public bool Checkbox(string label, bool[] v) {
     bool ret = EffekseerNativePINVOKE.GUIManager_Checkbox(swigCPtr, label, v);
     return ret;

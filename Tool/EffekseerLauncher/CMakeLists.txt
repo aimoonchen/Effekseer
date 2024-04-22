@@ -8,4 +8,13 @@ project(EffekseerLauncher C CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(EffekseerLauncher src/main.cpp)
+if(APPLE)
+  add_executable(EffekseerLauncher src/main.cpp)
+elseif(WIN32)
+  cmake_policy(SET CMP0091 NEW)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /SUBSYSTEM:WINDOWS")
+  set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /SUBSYSTEM:WINDOWS")
+
+  add_executable(EffekseerLauncher src/main.cpp resources.rc)
+endif()

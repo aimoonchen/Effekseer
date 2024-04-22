@@ -11,7 +11,7 @@ namespace Effekseer
 {
 	public class Core
 	{
-		public const string Version = "1.70";
+		public const string Version = "1.80β1";
 
 		public const string OptionFilePath = "config.option.xml";
 
@@ -1518,6 +1518,15 @@ namespace Effekseer
 						list.Add(Tuple35.Create(name, (object)node.AdvancedRendererCommonValuesValues.AlphaCutoffParam.FCurve));
 					}
 
+					if (node.GpuParticles.Enabled.Value)
+					{
+						if (node.GpuParticles.RenderColor.ColorAll.Type.Value == StandardColorType.FCurve)
+						{
+							var name = MultiLanguageTextProvider.GetText("Fcurve_Elm_GpuParticles_ColorAll");
+							list.Add(Tuple35.Create(name, (object)node.GpuParticles.RenderColor.ColorAll.FCurve.FCurve));
+						}
+					}
+
 					return list.ToArray();
 				};
 
@@ -1596,7 +1605,7 @@ namespace Effekseer
 		/// </summary>
 		public static string GetToolHelpURL()
 		{
-			const string baseURL = "https://effekseer.github.io/Helps/17x/Tool/";
+			const string baseURL = "https://effekseer.github.io/Helps/18x/Tool/";
 			string language = (LanguageTable.Languages[LanguageTable.SelectedIndex] == "ja") ? "ja" : "en";
 			return baseURL + language + "/";
 		}

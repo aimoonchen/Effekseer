@@ -124,6 +124,11 @@ public:
 		return graphicsDevice_->GetGraphics();
 	}
 
+	std::shared_ptr<LLGI::RenderPassPipelineState> GetCurrentRenderPassPipelineState() const
+	{
+		return currentRenderPassPipelineState_;
+	}
+
 	Effekseer::Backend::IndexBufferRef GetIndexBuffer();
 
 	/**
@@ -157,6 +162,21 @@ public:
 		@brief	軌跡レンダラーを生成する。
 	*/
 	::Effekseer::TrackRendererRef CreateTrackRenderer() override;
+	
+	/**
+		@brief	GPUタイマーを生成する。
+	*/
+	::Effekseer::GpuTimerRef CreateGpuTimer() override;
+
+	/**
+		@brief	GPUパーティクルシステムを生成する。
+	*/
+	::Effekseer::GpuParticleSystemRef CreateGpuParticleSystem(const Effekseer::GpuParticleSystem::Settings& settings = {}) override;
+	
+	/**
+		@brief	GPUパーティクルファクトリを生成する。
+	*/
+	::Effekseer::GpuParticleFactoryRef CreateGpuParticleFactory() override;
 
 	/**
 		@brief	テクスチャ読込クラスを生成する。
@@ -201,6 +221,14 @@ public:
 	void SetTextures(Shader* shader, Effekseer::Backend::TextureRef* textures, int32_t count);
 
 	void ResetRenderState() override;
+
+	void ResetQuery(LLGI::Query* query);
+
+	void BeginQuery(LLGI::Query* query, uint32_t queryIndex);
+
+	void EndQuery(LLGI::Query* query, uint32_t queryIndex);
+
+	void RecordTimestamp(LLGI::Query* query, uint32_t queryIndex);
 
 	virtual int GetRef() override
 	{

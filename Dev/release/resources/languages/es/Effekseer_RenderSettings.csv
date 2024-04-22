@@ -9,6 +9,7 @@ RS_RenderingOrder_FirstCreatedInstanceIsFirst_Name,Orden de aparición
 RS_RenderingOrder_FirstCreatedInstanceIsLast_Name,Revertido
 BillboardType_Billboard_Name,Panel
 BillboardType_RotatedBillboard_Name,Rotar Panel
+BillboardType_DirectionalBillboard_Name,移動方向ビルボード
 BillboardType_YAxisFixed_Name,Eje-Y fijado
 BillboardType_Fixed_Name,Fijado
 StandardColorType_Fixed_Name,Fijado
@@ -19,11 +20,13 @@ TextureUVTypeParameter_Type_Name,Tipo UV
 TextureUVTypeParameter_Type_Desc,"Tipo de UV
 Estirar: Estirará la imagen
 Tile: Colocará tiles"
+TextureUVTypeParameter_TileLength_Name,Tile Length
 TextureUVTypeParameter_TileEdgeHead_Name,El número del tile en la cabecera
 TextureUVTypeParameter_TileEdgeTail_Name,El número del tile en la cola
 TextureUVTypeParameter_TileLoopingArea_Name,Area de Bucle
 TextureUVTypeParameter_Type_Strech_Name,Estirar
 TextureUVTypeParameter_Type_Tile_Name,Tile
+TextureUVTypeParameter_Type_TilePerParticle_Name,Tile(Per particle)
 ,
 CullingType_Front_Name,Mostrar cara frontal
 CullingType_Back_Name,Mostrar cara trasera

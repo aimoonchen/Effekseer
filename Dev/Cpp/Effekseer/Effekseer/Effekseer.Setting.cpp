@@ -12,12 +12,14 @@
 #include "Effekseer.TextureLoader.h"
 #include "Model/ModelLoader.h"
 #include "Model/ProceduralModelGenerator.h"
+#include "VectorField/VectorFieldLoader.h"
 
 #include "Renderer/Effekseer.ModelRenderer.h"
 #include "Renderer/Effekseer.RibbonRenderer.h"
 #include "Renderer/Effekseer.RingRenderer.h"
 #include "Renderer/Effekseer.SpriteRenderer.h"
 #include "Renderer/Effekseer.TrackRenderer.h"
+#include "Renderer/Effekseer.GpuParticles.h"
 
 #include "Effekseer.Effect.h"
 #include "Effekseer.ResourceManager.h"
@@ -158,36 +160,44 @@ void Setting::SetMaterialLoader(MaterialLoaderRef loader)
 	resourceManager_->SetMaterialLoader(loader);
 }
 
-//----------------------------------------------------------------------------------
-//
-//----------------------------------------------------------------------------------
 CurveLoaderRef Setting::GetCurveLoader() const
 {
 	return resourceManager_->GetCurveLoader();
 }
 
-//----------------------------------------------------------------------------------
-//
-//----------------------------------------------------------------------------------
 void Setting::SetCurveLoader(CurveLoaderRef loader)
 {
 	resourceManager_->SetCurveLoader(loader);
 }
 
-//----------------------------------------------------------------------------------
-//
-//----------------------------------------------------------------------------------
+VectorFieldLoaderRef Setting::GetVectorFieldLoader() const
+{
+	return resourceManager_->GetVectorFieldLoader();
+}
+
+void Setting::SetVectorFieldLoader(VectorFieldLoaderRef loader)
+{
+	resourceManager_->SetVectorFieldLoader(loader);
+}
+
 ProceduralModelGeneratorRef Setting::GetProceduralMeshGenerator() const
 {
 	return resourceManager_->GetProceduralMeshGenerator();
 }
 
-//----------------------------------------------------------------------------------
-//
-//----------------------------------------------------------------------------------
 void Setting::SetProceduralMeshGenerator(ProceduralModelGeneratorRef generator)
 {
 	resourceManager_->SetProceduralMeshGenerator(generator);
+}
+
+GpuParticleFactoryRef Setting::GetGpuParticleFactory() const
+{
+	return gpuParticleFactory_;
+}
+
+void Setting::SetGpuParticleFactory(GpuParticleFactoryRef gpuParticleFactory)
+{
+	gpuParticleFactory_ = gpuParticleFactory;
 }
 
 //----------------------------------------------------------------------------------

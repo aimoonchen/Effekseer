@@ -26,7 +26,8 @@
 #include "Effekseer/Network/Effekseer.Client.h"
 #include "Effekseer/Network/Effekseer.Server.h"
 #include "Effekseer/Parameter/Effekseer.Parameters.h"
-#include "Effekseer/Renderer/Effekseer.GPUTimer.h"
+#include "Effekseer/Renderer/Effekseer.GpuTimer.h"
+#include "Effekseer/Renderer/Effekseer.GpuParticles.h"
 #include "Effekseer/Renderer/Effekseer.ModelRenderer.h"
 #include "Effekseer/Renderer/Effekseer.RibbonRenderer.h"
 #include "Effekseer/Renderer/Effekseer.RingRenderer.h"
@@ -51,5 +52,6 @@
 #include "Effekseer/SIMD/Vec4f.h"
 #include "Effekseer/Sound/Effekseer.SoundPlayer.h"
 #include "Effekseer/Utils/Effekseer.CustomAllocator.h"
-
+#include "Effekseer/VectorField/VectorField.h"
+#include "Effekseer/VectorField/VectorFieldLoader.h"
 #endif

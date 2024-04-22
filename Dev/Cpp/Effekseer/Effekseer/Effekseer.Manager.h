@@ -80,8 +80,8 @@ public:
 			\~English Perform synchronous update
 			\~Japanese 同期更新を行う
 			@note
-			\~English If true, update processing is performed synchronously. If false, update processing is performed asynchronously (after this, do not call anything other than Draw)
-			\~Japanese trueなら同期的に更新処理を行う。falseなら非同期的に更新処理を行う（次はDraw以外呼び出してはいけない）
+			\~English If true, update processing is performed synchronously. If false, update processing is performed asynchronously (after this, do not call anything other than Draw or Compute)
+			\~Japanese trueなら同期的に更新処理を行う。falseなら非同期的に更新処理を行う（次はDraw/Compute以外呼び出してはいけない）
 		*/
 		bool SyncUpdate = true;
 	};
@@ -270,14 +270,42 @@ public:
 		\~English get an GPU performance timer
 		\~Japanese GPUパフォーマンスタイマー取得する。
 	*/
-	virtual GPUTimerRef GetGPUTimer() = 0;
+	virtual GpuTimerRef GetGpuTimer() = 0;
 
 	/**
 		@brief
 		\~English get an GPU performance timer
 		\~Japanese GPUパフォーマンスタイマーを設定する。
 	*/
-	virtual void SetGPUTimer(GPUTimerRef gpuTimer) = 0;
+	virtual void SetGpuTimer(GpuTimerRef gpuTimer) = 0;
+	
+	/**
+		@brief
+		\~English get an GPU particle system
+		\~Japanese GPUパーティクルシステム取得する。
+	*/
+	virtual GpuParticleSystemRef GetGpuParticleSystem() = 0;
+
+	/**
+		@brief
+		\~English get an GPU particle system
+		\~Japanese GPUパーティクルシステムを設定する。
+	*/
+	virtual void SetGpuParticleSystem(GpuParticleSystemRef system) = 0;
+
+	/**
+	@brief
+	\~English get an GPU particle factory
+	\~Japanese GPUパーティクルファクトリ取得する。
+	*/
+	virtual GpuParticleFactoryRef GetGpuParticleFactory() = 0;
+
+	/**
+	@brief
+	\~English get an GPU particle factory
+	\~Japanese GPUパーティクルファクトリを設定する。
+	*/
+	virtual void SetGpuParticleFactory(GpuParticleFactoryRef factory) = 0;
 
 	/**
 		@brief	設定クラスを取得する。
@@ -826,6 +854,13 @@ public:
 
 	/**
 	@brief
+	\~English	Compute GPU particles.
+	\~Japanese	GPUパーティクルの計算処理を行う。
+	*/
+	virtual void Compute() = 0;
+
+	/**
+	@brief
 	\~English	Draw particles.
 	\~Japanese	描画処理を行う。
 	*/
@@ -925,14 +960,14 @@ public:
 		\~English	Gets the GPU time (microseconds) taken to render the all effects.
 		\~Japanese	エフェクト全ての描画処理にかかるGPU時間(マイクロ秒)を取得する。
 	*/
-	virtual int32_t GetGPUTime() const = 0;
+	virtual int32_t GetGpuTime() const = 0;
 
 	/**
 		@brief
 		\~English	Gets the GPU time (microseconds) taken to render the effect.
 		\~Japanese	エフェクトの描画処理にかかるGPU時間(マイクロ秒)を取得する。
 	*/
-	virtual int32_t GetGPUTime(Handle handle) const = 0;
+	virtual int32_t GetGpuTime(Handle handle) const = 0;
 
 	/**
 		@brief
