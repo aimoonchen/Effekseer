@@ -93,7 +93,7 @@ jobs:
         name: [linux,windows_x64,mac]
         include:
           - name: linux
-            os: ubuntu-20.04
+            os: ubuntu-22.04
             label: Linux
           - name: windows_x64
             os: windows-2019
@@ -154,18 +154,18 @@ jobs:
       - name: Prepare ForCpp
         if: matrix.name == 'windows_x64'
         run: |
-          release_cpp.bat
+          python release_cpp.py
         shell: cmd
         
       - name: Prepare Windows Tool
         run: |
-          release_tool.bat
+          python release_tool.py
         if: matrix.name == 'windows_x64'
         shell: cmd
 
       - name: Prepare Linux Tool
         run: |
-          bash ./release_tool.sh
+          python3 release_tool.py
         if: matrix.name == 'linux'
 
       - name: Upload ForCpp
