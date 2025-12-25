@@ -1,14 +1,7 @@
 
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#elif defined(_WIN32)
-#include <GL/glew.h>
-#else
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#endif
-
 #include "efkMat.Graphics.h"
+
+#include <OpenGLExtensions.h>
 
 #include <Common/StringHelper.h>
 #include <EffekseerRendererCommon/TextureLoader.h>
@@ -335,9 +328,9 @@ std::shared_ptr<Mesh> Mesh::Load(std::shared_ptr<Graphics> graphics, const char*
 	auto ib = graphics->GetGraphicsDevice()->CreateIndexBuffer(indexes.size(), indexes.data(), Effekseer::Backend::IndexBufferStrideType::Stride2);
 
 	auto mesh = std::make_shared<Mesh>();
-	mesh->vb = vb;
-	mesh->ib = ib;
-	mesh->indexCount = indexes.size();
+	mesh->vertexBuffer_ = vb;
+	mesh->indexBuffer_ = ib;
+	mesh->indexCount_ = indexes.size();
 
 	return mesh;
 }
@@ -719,9 +712,17 @@ void Preview::Render()
 			{
 				if (textures_[i]->Name == uniformLayout_->GetTextures()[j].c_str())
 				{
-					drawParam.SetTexture(j, textures_[i]->TexturePtr->GetTexture(), 
-						textures_[i]->SamplerType == TextureSamplerType::Repeat ? Effekseer::Backend::TextureWrapType::Repeat : Effekseer::Backend::TextureWrapType::Clamp,
-						Effekseer::Backend::TextureSamplingType::Linear);
+					Effekseer::Backend::TextureRef texture;
+					if (textures_[i]->TexturePtr != nullptr)
+					{
+						texture = textures_[i]->TexturePtr->GetTexture();
+					}
+					else
+					{
+						texture = black_->GetTexture();
+					}
+
+					drawParam.SetTexture(j, texture, textures_[i]->SamplerType == TextureSamplerType::Repeat ? Effekseer::Backend::TextureWrapType::Repeat : Effekseer::Backend::TextureWrapType::Clamp, Effekseer::Backend::TextureSamplingType::Linear);
 				}
 			}
 		}

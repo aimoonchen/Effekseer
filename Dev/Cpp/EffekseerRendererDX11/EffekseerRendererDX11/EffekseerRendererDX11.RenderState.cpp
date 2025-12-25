@@ -13,7 +13,7 @@ namespace EffekseerRendererDX11
 //
 //-----------------------------------------------------------------------------------
 RenderState::RenderState(RendererImplemented* renderer, D3D11_COMPARISON_FUNC depthFunc, bool isMSAAEnabled)
-	: m_renderer(renderer)
+	: renderer_(renderer)
 {
 	D3D11_CULL_MODE cullTbl[] = {
 		D3D11_CULL_BACK,
@@ -36,7 +36,7 @@ RenderState::RenderState(RendererImplemented* renderer, D3D11_COMPARISON_FUNC de
 
 		rsDesc.FrontCounterClockwise =
 			(depthFunc == D3D11_COMPARISON_GREATER_EQUAL || depthFunc == D3D11_COMPARISON_GREATER) ? TRUE : FALSE;
-		m_renderer->GetDevice()->CreateRasterizerState(&rsDesc, &m_rStates[ct]);
+		renderer_->GetDevice()->CreateRasterizerState(&rsDesc, &rasterizer_states_[ct]);
 	}
 
 	for (int32_t dt = 0; dt < DepthTestCount; dt++)
@@ -49,7 +49,7 @@ RenderState::RenderState(RendererImplemented* renderer, D3D11_COMPARISON_FUNC de
 			dsDesc.DepthWriteMask = (D3D11_DEPTH_WRITE_MASK)dw;
 			dsDesc.DepthFunc = depthFunc;
 			dsDesc.StencilEnable = FALSE;
-			m_renderer->GetDevice()->CreateDepthStencilState(&dsDesc, &m_dStates[dt][dw]);
+			renderer_->GetDevice()->CreateDepthStencilState(&dsDesc, &depth_stencil_states_[dt][dw]);
 		}
 	}
 
@@ -77,7 +77,7 @@ RenderState::RenderState(RendererImplemented* renderer, D3D11_COMPARISON_FUNC de
 				Desc.RenderTarget[k].BlendOp = D3D11_BLEND_OP_ADD;
 				break;
 			case ::Effekseer::AlphaBlendType::Blend:
-				if (m_renderer->GetImpl()->IsPremultipliedAlphaEnabled)
+				if (renderer_->GetImpl()->IsPremultipliedAlphaEnabled)
 				{
 					Desc.RenderTarget[k].BlendOp = D3D11_BLEND_OP_ADD;
 					Desc.RenderTarget[k].BlendOpAlpha = D3D11_BLEND_OP_ADD;
@@ -94,7 +94,7 @@ RenderState::RenderState(RendererImplemented* renderer, D3D11_COMPARISON_FUNC de
 				}
 				break;
 			case ::Effekseer::AlphaBlendType::Add:
-				if (m_renderer->GetImpl()->IsPremultipliedAlphaEnabled)
+				if (renderer_->GetImpl()->IsPremultipliedAlphaEnabled)
 				{
 					Desc.RenderTarget[k].BlendOp = D3D11_BLEND_OP_ADD;
 					Desc.RenderTarget[k].BlendOpAlpha = D3D11_BLEND_OP_ADD;
@@ -130,7 +130,7 @@ RenderState::RenderState(RendererImplemented* renderer, D3D11_COMPARISON_FUNC de
 			}
 		}
 
-		m_renderer->GetDevice()->CreateBlendState(&Desc, &m_bStates[i]);
+		renderer_->GetDevice()->CreateBlendState(&Desc, &blend_states_[i]);
 	}
 
 	for (int32_t f = 0; f < TextureFilterCount; f++)
@@ -166,7 +166,7 @@ RenderState::RenderState(RendererImplemented* renderer, D3D11_COMPARISON_FUNC de
 				D3D11_FLOAT32_MAX,
 			};
 
-			m_renderer->GetDevice()->CreateSamplerState(&SamlerDesc, &m_sStates[f][w]);
+			renderer_->GetDevice()->CreateSamplerState(&SamlerDesc, &sampler_states_[f][w]);
 		}
 	}
 }
@@ -178,27 +178,27 @@ RenderState::~RenderState()
 {
 	for (int32_t ct = 0; ct < CulTypeCount; ct++)
 	{
-		ES_SAFE_RELEASE(m_rStates[ct]);
+		ES_SAFE_RELEASE(rasterizer_states_[ct]);
 	}
 
 	for (int32_t dt = 0; dt < DepthTestCount; dt++)
 	{
 		for (int32_t dw = 0; dw < DepthWriteCount; dw++)
 		{
-			ES_SAFE_RELEASE(m_dStates[dt][dw]);
+			ES_SAFE_RELEASE(depth_stencil_states_[dt][dw]);
 		}
 	}
 
 	for (int32_t i = 0; i < AlphaTypeCount; i++)
 	{
-		ES_SAFE_RELEASE(m_bStates[i]);
+		ES_SAFE_RELEASE(blend_states_[i]);
 	}
 
 	for (int32_t f = 0; f < TextureFilterCount; f++)
 	{
 		for (int32_t w = 0; w < TextureWrapCount; w++)
 		{
-			ES_SAFE_RELEASE(m_sStates[f][w]);
+			ES_SAFE_RELEASE(sampler_states_[f][w]);
 		}
 	}
 }
@@ -212,70 +212,70 @@ void RenderState::Update(bool forced)
 	bool changeRasterizer = forced;
 	bool changeBlend = forced;
 
-	if (m_active.DepthTest != m_next.DepthTest || forced)
+	if (active_.DepthTest != next_.DepthTest || forced)
 	{
 		changeDepth = true;
 	}
 
-	if (m_active.DepthWrite != m_next.DepthWrite || forced)
+	if (active_.DepthWrite != next_.DepthWrite || forced)
 	{
 		changeDepth = true;
 	}
 
 	if (changeDepth)
 	{
-		m_renderer->GetContext()->OMSetDepthStencilState(m_dStates[m_next.DepthTest][m_next.DepthWrite], 0);
+		renderer_->GetContext()->OMSetDepthStencilState(depth_stencil_states_[next_.DepthTest][next_.DepthWrite], 0);
 	}
 
-	if (m_active.CullingType != m_next.CullingType || forced)
+	if (active_.CullingType != next_.CullingType || forced)
 	{
 		changeRasterizer = true;
 	}
 
 	if (changeRasterizer)
 	{
-		auto cullingType = (int32_t)m_next.CullingType;
-		m_renderer->GetContext()->RSSetState(m_rStates[cullingType]);
+		auto cullingType = (int32_t)next_.CullingType;
+		renderer_->GetContext()->RSSetState(rasterizer_states_[cullingType]);
 	}
 
-	if (m_active.AlphaBlend != m_next.AlphaBlend || forced)
+	if (active_.AlphaBlend != next_.AlphaBlend || forced)
 	{
 		changeBlend = true;
 	}
 
 	if (changeBlend)
 	{
-		auto alphaBlend = (int32_t)m_next.AlphaBlend;
+		auto alphaBlend = (int32_t)next_.AlphaBlend;
 		float blendFactor[] = {0, 0, 0, 0};
-		m_renderer->GetContext()->OMSetBlendState(m_bStates[alphaBlend], blendFactor, 0xFFFFFFFF);
+		renderer_->GetContext()->OMSetBlendState(blend_states_[alphaBlend], blendFactor, 0xFFFFFFFF);
 	}
 
 	for (int32_t i = 0; i < Effekseer::TextureSlotMax; i++)
 	{
 		bool changeSampler = forced;
 
-		if (m_active.TextureFilterTypes[i] != m_next.TextureFilterTypes[i] || forced)
+		if (active_.TextureFilterTypes[i] != next_.TextureFilterTypes[i] || forced)
 		{
 			changeSampler = true;
 		}
 
-		if (m_active.TextureWrapTypes[i] != m_next.TextureWrapTypes[i] || forced)
+		if (active_.TextureWrapTypes[i] != next_.TextureWrapTypes[i] || forced)
 		{
 			changeSampler = true;
 		}
 
 		if (changeSampler)
 		{
-			auto filter = (int32_t)m_next.TextureFilterTypes[i];
-			auto wrap = (int32_t)m_next.TextureWrapTypes[i];
+			auto filter = (int32_t)next_.TextureFilterTypes[i];
+			auto wrap = (int32_t)next_.TextureWrapTypes[i];
 
-			ID3D11SamplerState* samplerTbl[] = {m_sStates[filter][wrap]};
-			m_renderer->GetContext()->VSSetSamplers(i, 1, samplerTbl);
-			m_renderer->GetContext()->PSSetSamplers(i, 1, samplerTbl);
+			ID3D11SamplerState* samplerTbl[] = {sampler_states_[filter][wrap]};
+			renderer_->GetContext()->VSSetSamplers(i, 1, samplerTbl);
+			renderer_->GetContext()->PSSetSamplers(i, 1, samplerTbl);
 		}
 	}
 
-	m_active = m_next;
+	active_ = next_;
 }
 
 //-----------------------------------------------------------------------------------

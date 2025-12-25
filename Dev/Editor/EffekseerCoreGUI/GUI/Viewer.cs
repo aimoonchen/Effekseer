@@ -155,6 +155,7 @@ namespace Effekseer.GUI
 					new swig.Vector2I(EffectRenderer.GuideWidth, EffectRenderer.GuideHeight),
 					EffectRenderer.GetIsSRGBMode(),
 					EffectRenderer.GetBehavior(),
+					EffectRenderer.GetExternalModels(),
 					EffectRenderer.GetPostEffectParameter(),
 					EffectRenderer.GetEffect()))
 			{
@@ -608,6 +609,7 @@ namespace Effekseer.GUI
 				renderParam.IsGroundShown = Core.Environment.Ground.IsShown.Value;
 				renderParam.GroundHeight = Core.Environment.Ground.Height.Value;
 				renderParam.GroundExtent = Core.Environment.Ground.Extent.Value;
+				renderParam.IsGroundCollisionEnabled = Core.Environment.Ground.IsCollisionEnabled.Value;
 
 				renderParam.BackgroundColor = new swig.Color
 				{
@@ -766,6 +768,30 @@ namespace Effekseer.GUI
 
 			behavior.TimeSpan = Core.EffectBehavior.TimeSpan;
 			behavior.Distance = Core.EffectBehavior.Distance;
+
+			var externalModels = new ViewerExternalModelVector();
+			foreach (var model in Core.EffectBehavior.ExternalModels.GetModels())
+			{
+				if (string.IsNullOrEmpty(model.Model.AbsolutePath))
+				{
+					continue;
+				}
+
+				var externalModel = new ViewerExternalModel();
+				externalModel.Path = model.Model.AbsolutePath;
+				externalModel.PositionX = model.Translation.X;
+				externalModel.PositionY = model.Translation.Y;
+				externalModel.PositionZ = model.Translation.Z;
+				externalModel.RotationX = model.Rotation.X / 180.0f * 3.141592f;
+				externalModel.RotationY = model.Rotation.Y / 180.0f * 3.141592f;
+				externalModel.RotationZ = model.Rotation.Z / 180.0f * 3.141592f;
+				externalModel.ScaleX = model.Scale.X;
+				externalModel.ScaleY = model.Scale.Y;
+				externalModel.ScaleZ = model.Scale.Z;
+				externalModels.Add(externalModel);
+			}
+
+			behavior.ExternalModels = externalModels;
 
 			EffectRenderer.SetBehavior(behavior);
 

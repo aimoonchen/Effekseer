@@ -11,55 +11,37 @@
 #include "Sound/Effekseer.SoundPlayer.h"
 
 #include "Effekseer.Effect.h"
-#include "ForceField/ForceFields.h"
-#include "Noise/CurlNoise.h"
-#include "Parameter/AllTypeColor.h"
-#include "Parameter/AlphaCutoff.h"
-#include "Parameter/BasicSettings.h"
-#include "Parameter/Collisions.h"
-#include "Parameter/CustomData.h"
-#include "Parameter/DepthParameter.h"
-#include "Parameter/DynamicParameter.h"
-#include "Parameter/Easing.h"
+#include "ForceField/Effekseer.ForceFields.h"
+#include "Noise/Effekseer.CurlNoise.h"
+#include "Parameter/Effekseer.AllTypeColor.h"
+#include "Parameter/Effekseer.AlphaCutoff.h"
+#include "Parameter/Effekseer.BasicSettings.h"
+#include "Parameter/Effekseer.Collisions.h"
+#include "Parameter/Effekseer.CustomData.h"
+#include "Parameter/Effekseer.DepthParameter.h"
+#include "Parameter/Effekseer.DynamicParameter.h"
+#include "Parameter/Effekseer.Easing.h"
+#include "Parameter/Effekseer.KillRules.h"
+#include "Parameter/Effekseer.LOD.h"
 #include "Parameter/Effekseer.Parameters.h"
-#include "Parameter/KillRules.h"
-#include "Parameter/LOD.h"
-#include "Parameter/Rotation.h"
-#include "Parameter/Scaling.h"
-#include "Parameter/Sound.h"
-#include "Parameter/SpawnMethod.h"
-#include "Parameter/Translation.h"
-#include "Parameter/UV.h"
-#include "SIMD/Utils.h"
-#include "Utils/BinaryVersion.h"
+#include "Parameter/Effekseer.Rotation.h"
+#include "Parameter/Effekseer.Scaling.h"
+#include "Parameter/Effekseer.Sound.h"
+#include "Parameter/Effekseer.SpawnMethod.h"
+#include "Parameter/Effekseer.Translation.h"
+#include "Parameter/Effekseer.Trigger.h"
+#include "Parameter/Effekseer.UV.h"
 #include "Renderer/Effekseer.GpuParticles.h"
+#include "SIMD/Utils.h"
+#include "Utils/Effekseer.BinaryVersion.h"
 
 namespace Effekseer
 {
-
-enum class TriggerType : uint8_t
-{
-	None = 0,
-	ExternalTrigger = 1,
-};
-
-struct alignas(2) TriggerValues
-{
-	TriggerType type = TriggerType::None;
-	uint8_t index = 0;
-};
 
 struct SteeringBehaviorParameter
 {
 	random_float MaxFollowSpeed;
 	random_float SteeringSpeed;
-};
-
-struct TriggerParameter
-{
-	TriggerValues ToStartGeneration;
-	TriggerValues ToStopGeneration;
-	TriggerValues ToRemove;
 };
 
 struct ParameterRendererCommon
@@ -83,6 +65,8 @@ struct ParameterRendererCommon
 	int32_t TextureBlendType = -1;
 
 	float BlendUVDistortionIntensity = 1.0f;
+
+	int32_t UVHorizontalFlipProbability = 0;
 
 	float EmissiveScaling = 1.0f;
 
@@ -353,6 +337,16 @@ struct ParameterRendererCommon
 			pos += sizeof(float);
 		}
 
+		if (version >= Version18Alpha2)
+		{
+			memcpy(&UVHorizontalFlipProbability, pos, sizeof(int32_t));
+			pos += sizeof(int32_t);
+		}
+		else
+		{
+			UVHorizontalFlipProbability = 0;
+		}
+
 		if (version >= 10)
 		{
 			memcpy(&ColorBindType, pos, sizeof(int32_t));
@@ -473,6 +467,8 @@ protected:
 
 	//! calculate custom data
 	void CalcCustomData(const Instance* instance, std::array<float, 4>& customData1, std::array<float, 4>& customData2);
+
+	void ApplyRendererCommonUVHorizontalFlip(Instance& instance, IRandObject& rand) const;
 
 public:
 	/**

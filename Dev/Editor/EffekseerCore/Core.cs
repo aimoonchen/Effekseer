@@ -11,7 +11,7 @@ namespace Effekseer
 {
 	public class Core
 	{
-		public const string Version = "1.80β1";
+		public const string Version = "1.80β2";
 
 		public const string OptionFilePath = "config.option.xml";
 
@@ -976,6 +976,12 @@ namespace Effekseer
 				updater.Update(root_node);
 			}
 
+			if (toolVersion < ParseVersion("1.80β2"))
+			{
+				var updater = new Utils.ProjectVersionUpdator17To18Beta2();
+				updater.Update(root_node);
+			}
+
 			Command.CommandManager.Clear();
 			IsChanged = false;
 
@@ -1606,7 +1612,12 @@ namespace Effekseer
 		public static string GetToolHelpURL()
 		{
 			const string baseURL = "https://effekseer.github.io/Helps/18x/Tool/";
-			string language = (LanguageTable.Languages[LanguageTable.SelectedIndex] == "ja") ? "ja" : "en";
+			string language = LanguageTable.Languages[LanguageTable.SelectedIndex] switch
+			{
+				"ja" => "ja",
+				"zhcn" => "zh_CN",
+				_ => "en"
+			};
 			return baseURL + language + "/";
 		}
 

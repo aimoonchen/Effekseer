@@ -405,6 +405,7 @@ namespace Effekseer.GUI
 			Core.EffectBehavior.ColorAll.A.OnChanged += OnChanged;
 
 			Core.EffectBehavior.PlaybackSpeed.OnChanged += OnChanged;
+			Core.EffectBehavior.ExternalModels.OnChanged += OnChanged;
 
 			Core.Option.Magnification.OnChanged += OnChanged;
 			Core.Option.IsGridShown.OnChanged += OnChanged;
@@ -425,6 +426,7 @@ namespace Effekseer.GUI
 			Core.Environment.Background.BackgroundImage.OnChanged += OnChanged;
 
 			Core.Environment.Ground.IsShown.OnChanged += OnChanged;
+			Core.Environment.Ground.IsCollisionEnabled.OnChanged += OnChanged;
 			Core.Environment.Ground.Height.OnChanged += OnChanged;
 			Core.Environment.Ground.Extent.OnChanged += OnChanged;
 

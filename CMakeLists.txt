@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
-if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14" CACHE STRING "Minimum OS X deployment version" FORCE)
+if(APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version" FORCE)
 endif()
 
 include(ExternalProject)
@@ -18,6 +18,7 @@ option(BUILD_VIEWER "Build viewer" OFF)
 option(BUILD_EDITOR "Build editor" OFF)
 option(BUILD_TEST "Build test" OFF)
 option(BUILD_EXAMPLES "Build examples" ON)
+option(BUILD_TOOLS "Build tools" ON)
 option(BUILD_UNITYPLUGIN "is built as unity plugin" OFF)
 option(BUILD_UNITYPLUGIN_FOR_IOS "is built as unity plugin for ios" OFF)
 option(FROM_CI "from ci" OFF)
@@ -105,8 +106,30 @@ else()
     set(BUILD_WITH_POSTFIX OFF)
 endif()
 
+set(EFK_MSVC_RUNTIME_LIBRARY_ARGS "")
+
 if(MSVC)
     add_definitions(/MP)
+    add_compile_options(
+        $<$<COMPILE_LANGUAGE:C>:/utf-8>
+        $<$<COMPILE_LANGUAGE:CXX>:/utf-8>
+    )
+
+    if(USE_MSVC_RUNTIME_LIBRARY_DLL)
+        set(EFK_MSVC_RUNTIME_LIBRARY_VALUE "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    else()
+        set(EFK_MSVC_RUNTIME_LIBRARY_VALUE "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endif()
+
+    if(POLICY CMP0091)
+        cmake_policy(SET CMP0091 NEW)
+    endif()
+
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "${EFK_MSVC_RUNTIME_LIBRARY_VALUE}")
+    set(EFK_MSVC_RUNTIME_LIBRARY_ARGS
+        -DCMAKE_POLICY_DEFAULT_CMP0091=NEW
+        -DCMAKE_MSVC_RUNTIME_LIBRARY=${EFK_MSVC_RUNTIME_LIBRARY_VALUE}
+    )
 endif()
 
 
@@ -122,6 +145,7 @@ if(BUILD_WITH_EASY_PROFILER)
                         -DEFK_USE_MSVC_RUNTIME_LIBRARY_DLL=${USE_MSVC_RUNTIME_LIBRARY_DLL}
                         -DSANITIZE_ENABLED=${SANITIZE_ENABLED}
                         -DBUILD_SHARED_LIBS=OFF
+                        ${EFK_MSVC_RUNTIME_LIBRARY_ARGS}
                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
                         -DCMAKE_OSX_ARCHITECTURES:STRING=arm64$<SEMICOLON>x86_64
     )
@@ -149,15 +173,8 @@ if(BUILD_VULKAN)
     else()
 
         # Hack for GLSLANG
-        if (MSVC)
-            # CMAKE_MSVC_RUNTIME_LIBRARY can be only used if minimum required is larger than 3.17
-            if(USE_MSVC_RUNTIME_LIBRARY_DLL)
-                cmake_policy(SET CMP0091 NEW)
-                set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-            else()
-                cmake_policy(SET CMP0091 NEW)
-                set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-            endif()
+        if (MSVC AND DEFINED EFK_MSVC_RUNTIME_LIBRARY_VALUE)
+            set(CMAKE_MSVC_RUNTIME_LIBRARY "${EFK_MSVC_RUNTIME_LIBRARY_VALUE}")
         endif()
 
         set(ENABLE_HLSL OFF CACHE BOOL "For glslang" FORCE)
@@ -182,7 +199,7 @@ if(BUILD_VIEWER)
 
     ExternalProject_Add(
         ExternalProject_zlib
-        SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Downloads/zlib
+        SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Dev/Cpp/3rdParty/zlib
         PREFIX          ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Build/zlib
         INSTALL_DIR     ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/zlib
         INSTALL_COMMAND ${ZLIB_INSTALL}
@@ -192,7 +209,9 @@ if(BUILD_VIEWER)
                         -DSANITIZE_ENABLED=${SANITIZE_ENABLED}
                         -DASM686=off
                         -DAMD64=off
+                        -DZLIB_BUILD_EXAMPLES=OFF
                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
+                        ${EFK_MSVC_RUNTIME_LIBRARY_ARGS}
                         -DCMAKE_OSX_ARCHITECTURES:STRING=arm64$<SEMICOLON>x86_64
     )
     
@@ -202,12 +221,15 @@ if(BUILD_VIEWER)
     if(MSVC)
         set(ZLIB_LIB_DEBUG "zlibstaticd")
         set(ZLIB_LIB_RELEASE "zlibstatic")
+    elseif(APPLE)
+        set(ZLIB_LIB_DEBUG "libz.a")
+        set(ZLIB_LIB_RELEASE "libz.a")
+    elseif(UNIX)
+        set(ZLIB_LIB_DEBUG "libz.a")
+        set(ZLIB_LIB_RELEASE "libz.a")
     elseif(BUILD_WITH_POSTFIX)
         set(ZLIB_LIB_DEBUG "z")
         set(ZLIB_LIB_RELEASE "z")
-    elseif(UNIX AND NOT APPLE)
-        set(ZLIB_LIB_DEBUG "libz.a")
-        set(ZLIB_LIB_RELEASE "libz.a")
     else()
         set(ZLIB_LIB_DEBUG "z")
         set(ZLIB_LIB_RELEASE "z")
@@ -234,11 +256,13 @@ if(BUILD_VIEWER)
                         -DEFK_USE_MSVC_RUNTIME_LIBRARY_DLL=${USE_MSVC_RUNTIME_LIBRARY_DLL}
                         -DSANITIZE_ENABLED=${SANITIZE_ENABLED}
                         -DZLIB_ROOT=${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/zlib/
+                        -DZLIB_USE_STATIC_LIBS=ON
                         -DPNG_SHARED=OFF
                         -DPNG_FRAMEWORK=OFF
                         -DPNG_EXECUTABLES=OFF
                         -DPNG_TESTS=OFF
                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
+                        ${EFK_MSVC_RUNTIME_LIBRARY_ARGS}
                         -DCMAKE_OSX_ARCHITECTURES:STRING=arm64$<SEMICOLON>x86_64 # For apple Silicon
                         -DPNG_HARDWARE_OPTIMIZATIONS=OFF # HACK : For apple Silicon
     )
@@ -255,11 +279,13 @@ if(BUILD_VIEWER)
                         -DEFK_USE_MSVC_RUNTIME_LIBRARY_DLL=${USE_MSVC_RUNTIME_LIBRARY_DLL}
                         -DSANITIZE_ENABLED=${SANITIZE_ENABLED}
                         -DZLIB_ROOT=${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/zlib/
+                        -DZLIB_USE_STATIC_LIBS=ON
                         -DPNG_SHARED=OFF
                         -DPNG_FRAMEWORK=OFF
                         -DPNG_EXECUTABLES=OFF
                         -DPNG_TESTS=OFF
                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
+                        ${EFK_MSVC_RUNTIME_LIBRARY_ARGS}
     )
     endif()
 
@@ -295,9 +321,11 @@ if(BUILD_VIEWER)
                         -DEFK_USE_MSVC_RUNTIME_LIBRARY_DLL=${USE_MSVC_RUNTIME_LIBRARY_DLL}
                         -DSANITIZE_ENABLED=${SANITIZE_ENABLED}
                         -DZLIB_ROOT=${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/zlib
+                        -DZLIB_USE_STATIC_LIBS=ON
                         -DBUILD_STATIC_LIBS=ON
                         -DBUILD_SHARED_LIBS=OFF
                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
+                        ${EFK_MSVC_RUNTIME_LIBRARY_ARGS}
                         -DCMAKE_OSX_ARCHITECTURES:STRING=arm64$<SEMICOLON>x86_64
     )
 
@@ -331,6 +359,7 @@ if(BUILD_VIEWER)
                         -DEFK_USE_MSVC_RUNTIME_LIBRARY_DLL=${USE_MSVC_RUNTIME_LIBRARY_DLL}
                         -DSANITIZE_ENABLED=${SANITIZE_ENABLED}
                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
+                        ${EFK_MSVC_RUNTIME_LIBRARY_ARGS}
                         -DCMAKE_OSX_ARCHITECTURES:STRING=arm64$<SEMICOLON>x86_64
     )
     list(APPEND EFK_THIRDPARTY_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/Downloads/OpenSoundMixer/src)
@@ -342,34 +371,6 @@ if(BUILD_VIEWER)
     else()
         set(OSM_LIB_DEBUG "OpenSoundMixer")
         set(OSM_LIB_RELEASE "OpenSoundMixer")
-    endif()
-endif()
-
-if(BUILD_VIEWER OR BUILD_TEST)
-    # glew
-    if(NOT APPLE)
-        ExternalProject_Add(
-            ExternalProject_glew
-            SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/Downloads/glew
-            PREFIX          ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Build/glew
-            INSTALL_DIR     ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/glew
-            PATCH_COMMAND   ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Dev/3rdPartyPatch/glew-CMakeLists.txt <SOURCE_DIR>/CMakeLists.txt
-            CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/glew
-                            -DCMAKE_USER_MAKE_RULES_OVERRIDE=${CMAKE_CURRENT_SOURCE_DIR}/Dev/CFlagOverrides.cmake
-                            -DEFK_USE_MSVC_RUNTIME_LIBRARY_DLL=${USE_MSVC_RUNTIME_LIBRARY_DLL}
-                            -DSANITIZE_ENABLED=${SANITIZE_ENABLED}
-                            -DBUILD_SHARED_LIBS=OFF
-                            -DGLEW_BUILD_INFO=OFF
-                            -DBUILD_UTILS=OFF
-                            -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
-        )
-
-        list(APPEND EFK_THIRDPARTY_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/glew/include)
-        list(APPEND EFK_THIRDPARTY_LIBRARY_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/glew/lib)
-        if(EXISTS "${ExternalProject_glew_INSTALL_DIR}/lib64")
-            list(APPEND EFK_THIRDPARTY_LIBRARY_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}/ThirdParty/Install/glew/lib64)
-        endif()
-    
     endif()
 endif()
 
@@ -391,6 +392,7 @@ if(BUILD_VIEWER OR BUILD_EXAMPLES OR BUILD_TEST)
                         -DGLFW_BUILD_DOCS=OFF
                         -DGLFW_INSTALL=ON
                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
+                        ${EFK_MSVC_RUNTIME_LIBRARY_ARGS}
                         -DCMAKE_OSX_ARCHITECTURES:STRING=arm64$<SEMICOLON>x86_64
     )
 
@@ -438,6 +440,10 @@ if(BUILD_EXAMPLES)
     add_subdirectory(Examples)
 endif()
 
+if(BUILD_TOOLS)
+    add_subdirectory(Tool)
+endif()
+
 # specify filters
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -460,6 +466,5 @@ if (BUILD_VIEWER)
     set_target_properties (ExternalProject_glfw PROPERTIES FOLDER Thirdparty)
     set_target_properties (ExternalProject_OpenSoundMixer PROPERTIES FOLDER Thirdparty)
     if(NOT APPLE)
-        set_target_properties (ExternalProject_glew PROPERTIES FOLDER Thirdparty)
     endif()
 endif()

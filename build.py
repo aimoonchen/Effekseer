@@ -154,9 +154,10 @@ def main():
 
         if is_mac():
             run_command('dotnet build Dev/Editor/Effekseer/Effekseer.csproj')
-            run_command('dotnet publish Dev/Editor/Effekseer/Effekseer.csproj -c Release --self-contained -r osx.10.11-x64')
-            run_command('cp -r Dev/release/osx.10.11-x64/publish/* Dev/release/')
-            run_command('rm -rf -r Dev/release/osx.10.11-x64')
+            runtime_identifier = 'osx-x64'
+            run_command(f'dotnet publish Dev/Editor/Effekseer/Effekseer.csproj -c Release --self-contained -r {runtime_identifier}')
+            run_command(f'cp -r Dev/release/{runtime_identifier}/publish/* Dev/release/')
+            run_command(f'rm -rf -r Dev/release/{runtime_identifier}')
 
         elif is_windows():
             run_command('dotnet build Dev/Editor/Effekseer/Effekseer.csproj')
@@ -168,9 +169,10 @@ def main():
             run_command('dotnet publish Dev/Editor/Effekseer/Effekseer.csproj -c Release --self-contained -r linux-x64')
             run_command('chmod +x Dev/release/Effekseer')
             run_command('chmod +x Dev/release/EffekseerMaterialEditor')
-            run_command('chmod +x Dev/release/tools/fbxToEffekseerCurveConverter')
-            run_command('chmod +x Dev/release/tools/fbxToEffekseerModelConverter')
-            run_command('chmod +x Dev/release/tools/libfbxsdk.so')
+            run_command('chmod +x Dev/release/tools/EffekseerResourceConverter')
+            # run_command('chmod +x Dev/release/tools/fbxToEffekseerCurveConverter')
+            # run_command('chmod +x Dev/release/tools/fbxToEffekseerModelConverter')
+            # run_command('chmod +x Dev/release/tools/libfbxsdk.so')
             run_command('cp -r Dev/release/linux-x64/publish/* Dev/release/')
             run_command('rm -rf -r Dev/release/linux-x64')
 
@@ -182,8 +184,9 @@ def main():
         mkdir('Mac/Effekseer.app/Contents/MacOS/')
         shutil.copy('../Tool/EffekseerLauncher/build_macosx/EffekseerLauncher', 'Mac/Effekseer.app/Contents/MacOS/')
 
-        run_command('chmod +x Mac/Effekseer.app/Contents/Resources/tools/fbxToEffekseerCurveConverter')
-        run_command('chmod +x Mac/Effekseer.app/Contents/Resources/tools/fbxToEffekseerModelConverter')
+        run_command('chmod +x Mac/Effekseer.app/Contents/Resources/tools/EffekseerResourceConverter')
+        # run_command('chmod +x Mac/Effekseer.app/Contents/Resources/tools/fbxToEffekseerCurveConverter')
+        # run_command('chmod +x Mac/Effekseer.app/Contents/Resources/tools/fbxToEffekseerModelConverter')
 
         os.makedirs('Mac/Package', exist_ok=True)
 

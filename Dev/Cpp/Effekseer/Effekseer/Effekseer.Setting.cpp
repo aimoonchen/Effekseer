@@ -3,27 +3,24 @@
 //
 //----------------------------------------------------------------------------------
 #include "Effekseer.Setting.h"
-#include "Effekseer.EffectLoader.h"
-#include "Effekseer.RectF.h"
-
 #include "Effekseer.CurveLoader.h"
+#include "Effekseer.Effect.h"
+#include "Effekseer.EffectLoader.h"
 #include "Effekseer.MaterialLoader.h"
+#include "Effekseer.RectF.h"
+#include "Effekseer.ResourceManager.h"
 #include "Effekseer.SoundLoader.h"
 #include "Effekseer.TextureLoader.h"
-#include "Model/ModelLoader.h"
-#include "Model/ProceduralModelGenerator.h"
-#include "VectorField/VectorFieldLoader.h"
-
+#include "IO/Effekseer.EfkEfcFactory.h"
+#include "Model/Effekseer.ModelLoader.h"
+#include "Model/Effekseer.ProceduralModelGenerator.h"
+#include "Renderer/Effekseer.GpuParticles.h"
 #include "Renderer/Effekseer.ModelRenderer.h"
 #include "Renderer/Effekseer.RibbonRenderer.h"
 #include "Renderer/Effekseer.RingRenderer.h"
 #include "Renderer/Effekseer.SpriteRenderer.h"
 #include "Renderer/Effekseer.TrackRenderer.h"
-#include "Renderer/Effekseer.GpuParticles.h"
-
-#include "Effekseer.Effect.h"
-#include "Effekseer.ResourceManager.h"
-#include "IO/Effekseer.EfkEfcFactory.h"
+#include "VectorField/Effekseer.VectorFieldLoader.h"
 
 //----------------------------------------------------------------------------------
 //
@@ -35,7 +32,7 @@ namespace Effekseer
 //
 //----------------------------------------------------------------------------------
 Setting::Setting()
-	: m_coordinateSystem(CoordinateSystem::RH)
+	: coordinateSystem_(CoordinateSystem::RH)
 {
 	auto effectFactory = MakeRefPtr<EffectFactory>();
 	AddEffectFactory(effectFactory);
@@ -69,7 +66,7 @@ SettingRef Setting::Create()
 //----------------------------------------------------------------------------------
 CoordinateSystem Setting::GetCoordinateSystem() const
 {
-	return m_coordinateSystem;
+	return coordinateSystem_;
 }
 
 //----------------------------------------------------------------------------------
@@ -77,7 +74,7 @@ CoordinateSystem Setting::GetCoordinateSystem() const
 //----------------------------------------------------------------------------------
 void Setting::SetCoordinateSystem(CoordinateSystem coordinateSystem)
 {
-	m_coordinateSystem = coordinateSystem;
+	coordinateSystem_ = coordinateSystem;
 }
 
 //----------------------------------------------------------------------------------
@@ -85,7 +82,7 @@ void Setting::SetCoordinateSystem(CoordinateSystem coordinateSystem)
 //----------------------------------------------------------------------------------
 EffectLoaderRef Setting::GetEffectLoader()
 {
-	return m_effectLoader;
+	return effectLoader_;
 }
 
 //----------------------------------------------------------------------------------
@@ -93,7 +90,7 @@ EffectLoaderRef Setting::GetEffectLoader()
 //----------------------------------------------------------------------------------
 void Setting::SetEffectLoader(EffectLoaderRef loader)
 {
-	m_effectLoader = loader;
+	effectLoader_ = loader;
 }
 
 //----------------------------------------------------------------------------------

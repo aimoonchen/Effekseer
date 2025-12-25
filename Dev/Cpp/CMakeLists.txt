@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-if(APPLE)
+if(APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL "iOS")
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version" FORCE)
 endif()
 
@@ -149,6 +149,11 @@ if(BUILD_VIEWER OR BUILD_TEST)
     list(APPEND EFK_THIRDPARTY_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/3rdParty/spdlog/include/)
 endif()
 
+if (BUILD_VIEWER OR BUILD_TEST)
+    add_subdirectory("OpenGLHelper")
+    set_target_properties (OpenGLHelper PROPERTIES FOLDER Libraries)
+endif()
+
 if (BUILD_VIEWER)
     add_subdirectory("EditorCommon")
     set_target_properties (EditorCommon PROPERTIES FOLDER Editor)
@@ -161,18 +166,16 @@ if (BUILD_VIEWER)
     add_dependencies(Viewer ResourceData)
 endif()
 
-
 if (BUILD_TEST)
-	add_subdirectory("TestRuntimeFramework")
-	add_subdirectory("Test")
-	add_subdirectory("TakeScreenshots")
+    add_subdirectory("TestRuntimeFramework")
+    add_subdirectory("Test")
+    add_subdirectory("TakeScreenshots")
     set_target_properties (TestRuntimeFramework PROPERTIES FOLDER Tests)
     set_target_properties (TestCpp PROPERTIES FOLDER Tests)
     set_target_properties (TakeScreenshots PROPERTIES FOLDER Tests)
 endif()
 
 if(BUILD_VIEWER)
-
     set(BUILD_TEST_TEMP ${BUILD_TEST})
     set(BUILD_TEST OFF)
     add_subdirectory("EffekseerMaterial")

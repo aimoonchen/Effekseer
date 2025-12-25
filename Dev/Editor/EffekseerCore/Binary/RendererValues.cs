@@ -132,7 +132,6 @@ namespace Effekseer.Binary
 			AddPartialColor();
 			AddPosition();
 
-
 			void AddPartialColor()
 			{
 				data.Add(param.Color);
@@ -430,6 +429,10 @@ namespace Effekseer.Binary
 					{
 						data.Add((-1).GetBytes());
 					}
+				}
+				else if (value.Model.ModelReference.Value == Data.ModelReferenceType.ExternalModel)
+				{
+					data.Add(param.ExternalModelIndex.GetBytes());
 				}
 			}
 		}

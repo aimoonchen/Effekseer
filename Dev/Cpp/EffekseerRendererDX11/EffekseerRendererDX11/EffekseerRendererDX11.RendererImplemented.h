@@ -23,35 +23,35 @@ using Vertex = EffekseerRenderer::SimpleVertex;
 class OriginalState : public ::Effekseer::SIMD::AlignedAllocationPolicy<16>
 {
 private:
-	std::array<ID3D11SamplerState*, Effekseer::TextureSlotMax> m_samplers;
+	std::array<ID3D11SamplerState*, Effekseer::TextureSlotMax> samplers_;
 
-	ID3D11BlendState* m_blendState;
-	std::array<float, Effekseer::TextureSlotMax> m_blendFactor;
-	UINT m_blendSampleMask;
+	ID3D11BlendState* blendState_;
+	std::array<float, Effekseer::TextureSlotMax> blendFactor_;
+	UINT blendSampleMask_;
 
-	ID3D11DepthStencilState* m_depthStencilState;
-	UINT m_depthStencilStateRef;
+	ID3D11DepthStencilState* depthStencilState_;
+	UINT depthStencilState_Ref;
 
-	ID3D11RasterizerState* m_pRasterizerState;
+	ID3D11RasterizerState* rasterizerState_;
 
-	ID3D11Buffer* m_vertexConstantBuffer;
-	ID3D11Buffer* m_pixelConstantBuffer;
+	ID3D11Buffer* vertexConstantBuffer_;
+	ID3D11Buffer* pixelConstantBuffer_;
 
-	ID3D11VertexShader* m_pVS;
-	ID3D11PixelShader* m_pPS;
+	ID3D11VertexShader* vs_;
+	ID3D11PixelShader* ps_;
 
-	ID3D11InputLayout* m_layout;
-	D3D11_PRIMITIVE_TOPOLOGY m_topology;
+	ID3D11InputLayout* layout_;
+	D3D11_PRIMITIVE_TOPOLOGY topology_;
 
-	std::array<ID3D11ShaderResourceView*, Effekseer::TextureSlotMax> m_psSRVs;
+	std::array<ID3D11ShaderResourceView*, Effekseer::TextureSlotMax> psSrvs_;
 
-	ID3D11Buffer* m_pVB;
-	UINT m_vbStrides;
-	UINT m_vbOffset;
+	ID3D11Buffer* vertexBuffer_;
+	UINT vbStrides_;
+	UINT vbOffset_;
 
-	ID3D11Buffer* m_pIB;
-	DXGI_FORMAT m_ibFormat;
-	UINT m_ibOffset;
+	ID3D11Buffer* indexBuffer_;
+	DXGI_FORMAT ibFormat_;
+	UINT ibOffset_;
 
 public:
 	OriginalState();
@@ -69,35 +69,34 @@ class RendererImplemented : public Renderer, public ::Effekseer::ReferenceObject
 	friend class DeviceObject;
 
 private:
-	ID3D11Device* m_device;
-	ID3D11DeviceContext* m_context;
+	ID3D11Device* device_ = nullptr;
+	ID3D11DeviceContext* context_ = nullptr;
 
-	Effekseer::Backend::IndexBufferRef currentndexBuffer_;
-	Effekseer::Backend::IndexBufferRef indexBuffer_;
-	Effekseer::Backend::IndexBufferRef indexBufferForWireframe_;
-	int32_t m_squareMaxCount;
+	Effekseer::Backend::IndexBufferRef current_index_buffer_;
+	Effekseer::Backend::IndexBufferRef index_buffer_;
+	Effekseer::Backend::IndexBufferRef index_buffer_for_wireframe_;
+	int32_t square_max_count_ = 0;
+	Shader* current_shader_ = nullptr;
 
-	Shader* currentShader = nullptr;
+	EffekseerRenderer::StandardRenderer<RendererImplemented, Shader>* standard_renderer_ = nullptr;
 
-	EffekseerRenderer::StandardRenderer<RendererImplemented, Shader>* m_standardRenderer;
+	::Effekseer::CoordinateSystem coordinate_system_ = ::Effekseer::CoordinateSystem::RH;
 
-	::Effekseer::CoordinateSystem m_coordinateSystem;
+	::EffekseerRenderer::RenderStateBase* render_state_ = nullptr;
 
-	::EffekseerRenderer::RenderStateBase* m_renderState;
+	std::set<DeviceObject*> device_objects_;
 
-	std::set<DeviceObject*> m_deviceObjects;
+	OriginalState* state_ = nullptr;
 
-	OriginalState* m_state;
+	bool restoration_of_states_ = true;
 
-	bool m_restorationOfStates;
+	::Effekseer::Backend::TextureRef background_dx11_;
 
-	::Effekseer::Backend::TextureRef m_backgroundDX11;
+	D3D11_COMPARISON_FUNC depth_func_ = D3D11_COMPARISON_NEVER;
 
-	D3D11_COMPARISON_FUNC m_depthFunc;
+	EffekseerRenderer::DistortingCallback* distorting_callback_ = nullptr;
 
-	EffekseerRenderer::DistortingCallback* m_distortingCallback;
-
-	Backend::GraphicsDeviceRef graphicsDevice_ = nullptr;
+	Backend::GraphicsDeviceRef graphics_device_ = nullptr;
 
 public:
 	RendererImplemented(int32_t squareMaxCount);
@@ -120,8 +119,6 @@ public:
 	ID3D11DeviceContext* GetContext() override;
 
 	Effekseer::Backend::IndexBufferRef GetIndexBuffer();
-
-	// IndexBuffer* GetIndexBuffer();
 
 	int32_t GetSquareMaxCount() const;
 
@@ -157,7 +154,7 @@ public:
 
 	EffekseerRenderer::StandardRenderer<RendererImplemented, Shader>* GetStandardRenderer()
 	{
-		return m_standardRenderer;
+		return standard_renderer_;
 	}
 
 	void SetVertexBuffer(ID3D11Buffer* vertexBuffer, int32_t size);

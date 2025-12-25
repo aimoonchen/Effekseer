@@ -185,7 +185,7 @@ VertexArrayObject::VertexArrayObject()
 	if (GLExt::IsSupportedVertexArray())
 	{
 		GLExt::glGenVertexArrays(1, &vao_);
-		gen_thread_id_ = std::this_thread::get_id();
+		creationThreadId_ = std::this_thread::get_id();
 	}
 }
 
@@ -195,7 +195,7 @@ VertexArrayObject::~VertexArrayObject()
 	{
 		const auto thread_id_ = std::this_thread::get_id();
 
-		if (gen_thread_id_ != thread_id_)
+		if (creationThreadId_ != thread_id_)
 		{
 			Effekseer::Log(Effekseer::LogType::Error, "It have to delete the shader in a thread where the shader is generated.");
 		}
@@ -836,6 +836,8 @@ Shader::~Shader()
 
 bool Shader::Compile()
 {
+	graphicsDevice_->ClearLastShaderError();
+
 	std::array<GLchar*, elementMax> vsCodePtr;
 	std::array<GLchar*, elementMax> psCodePtr;
 	std::array<GLint, elementMax> vsCodeLen;
@@ -874,37 +876,89 @@ bool Shader::Compile()
 	GLExt::glLinkProgram(program);
 	GLExt::glGetProgramiv(program, GL_LINK_STATUS, &res_link);
 
-#ifndef NDEBUG
-	if (res_link == GL_FALSE)
+	const auto get_shader_log = [](GLuint shader) -> std::string
 	{
-		// output errors
-		char log[512];
-		int32_t log_size;
-		GLExt::glGetShaderInfoLog(vert_shader, sizeof(log), &log_size, log);
-		if (log_size > 0)
+		GLint logSize = 0;
+		GLExt::glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
+		if (logSize <= 1)
+		{
+			return {};
+		}
+
+		std::string log(static_cast<size_t>(logSize), '\0');
+		GLsizei written = 0;
+		GLExt::glGetShaderInfoLog(shader, logSize, &written, log.data());
+		log.resize(static_cast<size_t>(written));
+		return log;
+	};
+
+	const auto get_program_log = [](GLuint program_object) -> std::string
+	{
+		GLint logSize = 0;
+		GLExt::glGetProgramiv(program_object, GL_INFO_LOG_LENGTH, &logSize);
+		if (logSize <= 1)
+		{
+			return {};
+		}
+
+		std::string log(static_cast<size_t>(logSize), '\0');
+		GLsizei written = 0;
+		GLExt::glGetProgramInfoLog(program_object, logSize, &written, log.data());
+		log.resize(static_cast<size_t>(written));
+		return log;
+	};
+
+	const auto is_successful = (res_vs == GL_TRUE) && (res_fs == GL_TRUE) && (res_link == GL_TRUE);
+
+	if (!is_successful)
+	{
+		std::string vertex_log_;
+		std::string pixel_log_;
+		std::string program_log_;
+
+		if (res_vs == GL_FALSE)
+		{
+			vertex_log_ = get_shader_log(vert_shader);
+		}
+
+		if (res_fs == GL_FALSE)
+		{
+			pixel_log_ = get_shader_log(frag_shader);
+		}
+
+		if (res_link == GL_FALSE)
+		{
+			program_log_ = get_program_log(program);
+		}
+
+		graphicsDevice_->SetLastShaderError(vertex_log_, pixel_log_, program_log_);
+
+#ifndef NDEBUG
+		if (!vertex_log_.empty())
 		{
 			LOG(": Vertex Shader error.\n");
-			LOG(log);
+			LOG(vertex_log_.c_str());
 		}
-		GLExt::glGetShaderInfoLog(frag_shader, sizeof(log), &log_size, log);
-		if (log_size > 0)
+
+		if (!pixel_log_.empty())
 		{
 			LOG(": Fragment Shader error.\n");
-			LOG(log);
+			LOG(pixel_log_.c_str());
 		}
-		GLExt::glGetProgramInfoLog(program, sizeof(log), &log_size, log);
-		if (log_size > 0)
+
+		if (!program_log_.empty())
 		{
 			LOG(": Shader Link error.\n");
-			LOG(log);
+			LOG(program_log_.c_str());
 		}
-	}
 #endif
+	}
+
 	// dispose shader objects
 	GLExt::glDeleteShader(frag_shader);
 	GLExt::glDeleteShader(vert_shader);
 
-	if (res_link == GL_FALSE)
+	if (!is_successful)
 	{
 		GLExt::glDeleteProgram(program);
 		return false;
@@ -1147,6 +1201,8 @@ GraphicsDevice::GraphicsDevice(OpenGLDeviceType deviceType, bool isExtensionsEna
 	}
 
 	glGetIntegerv(GL_FRONT_FACE, &frontFace_);
+
+	ClearLastShaderError();
 }
 
 GraphicsDevice::~GraphicsDevice()
@@ -1162,14 +1218,44 @@ GraphicsDevice::~GraphicsDevice()
 	}
 }
 
+void GraphicsDevice::ClearLastShaderError()
+{
+	for (auto& error : lastShaderErrors_)
+	{
+		error.clear();
+	}
+}
+
+void GraphicsDevice::SetLastShaderError(const std::string& vertex, const std::string& pixel, const std::string& program)
+{
+	lastShaderErrors_[0] = vertex;
+	lastShaderErrors_[1] = pixel;
+	lastShaderErrors_[2] = program;
+}
+
+const std::string& GraphicsDevice::GetLastVertexShaderError() const
+{
+	return lastShaderErrors_[0];
+}
+
+const std::string& GraphicsDevice::GetLastPixelShaderError() const
+{
+	return lastShaderErrors_[1];
+}
+
+const std::string& GraphicsDevice::GetLastProgramShaderError() const
+{
+	return lastShaderErrors_[2];
+}
+
 bool GraphicsDevice::GetIsRestorationOfStatesRequired() const
 {
-	return is_restoration_of_states_required_;
+	return isRestorationOfStatesRequired_;
 }
 
 void GraphicsDevice::SetIsRestorationOfStatesRequired(bool value)
 {
-	is_restoration_of_states_required_ = value;
+	isRestorationOfStatesRequired_ = value;
 }
 
 bool GraphicsDevice::GetIsValid() const
