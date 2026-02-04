@@ -1,16 +1,17 @@
-// Choose from the following graphics APIs you want to enable
+﻿// Choose from the following graphics APIs you want to enable
 // グラフィックスAPIを下記から選んで有効にしてください
 
 #ifdef _WIN32
 #define DEVICE_DX11
-//#define DEVICE_DX12
-//#define DEVICE_VULKAN
+// #define DEVICE_DX12
+// #define DEVICE_VULKAN
 #else
 #define DEVICE_VULKAN
 #endif
 
 #include <stdio.h>
 #include <string>
+#include <vector>
 
 #include <Effekseer.h>
 
@@ -81,7 +82,8 @@ int main(int argc, char** argv)
 
 	size_t effectIndex = 0;
 	std::vector<Effekseer::EffectRef> effects;
-	for (size_t i = 0; i < sizeof(examplesFiles) / sizeof(const char16_t*); i++) {
+	for (size_t i = 0; i < sizeof(examplesFiles) / sizeof(const char16_t*); i++)
+	{
 		effects.push_back(Effekseer::Effect::Create(efkManager, examplesFiles[i]));
 	}
 

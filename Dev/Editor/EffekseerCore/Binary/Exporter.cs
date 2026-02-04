@@ -31,7 +31,8 @@ namespace Effekseer.Binary
 		Ver18Alpha1 = 1800,
 		Ver18Alpha2 = 1801,
 		Ver18Alpha3 = 1802,
-		Latest = Ver18Alpha3,
+		Ver1800 = 1810,
+		Latest = Ver1800,
 	}
 
 	public class Exporter
@@ -585,7 +586,7 @@ namespace Effekseer.Binary
 				}
 			};
 
-			get_curves(Core.Root);
+			get_curves(rootNode);
 
 			{
 				int index = 0;
